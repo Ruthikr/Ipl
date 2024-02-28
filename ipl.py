@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 import math
 import time
-
+import sklearn
 
 pipe=pickle.load(open("pipe.pkl","rb"))
 
