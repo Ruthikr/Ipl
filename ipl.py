@@ -5,7 +5,7 @@ import math
 import time
 import sklearn
 
-pipe=pickle.load(open("pipe.pkl","rb"))
+pipe=pickle.load(open("new_pipe.pkl","rb"))
 
 cities=[
 "Mumbai",
