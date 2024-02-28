@@ -55,7 +55,7 @@ st.set_page_config(
     initial_sidebar_state="auto",
     )
 st.title("IPL Win Predictor")
-
+st.divider()
 st.header("Second Innings")
 
 
