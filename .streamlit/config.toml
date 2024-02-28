@@ -1,7 +1,6 @@
 [theme]
 primaryColor="#FF4B4B"
-backgroundColor="background-color: #0093E9;
-background-image: linear-gradient(160deg, #0093E9 0%, #80D0C7 100%);"
+backgroundColor="#0093E9"
 secondaryBackgroundColor="#262730"
 textColor="#FAFAFA"
 font="sans serif"
