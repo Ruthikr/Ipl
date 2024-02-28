@@ -6,42 +6,43 @@ import time
 import sklearn
 
 pipe=pickle.load(open("pipe.pkl","rb"))
-
 cities=[
-"Mumbai",
-"Delhi",              
-"Kolkata",            
-"Chennai",            
-"Hyderabad",      
+"Mumbai"            
+"Kolkata",           
+"Delhi",             
+"Bangalore",         
+"Hyderabad",         
+"Chennai",           
+"Jaipur",             
 "Chandigarh",         
-"Bangalore",          
-"Jaipur",           
-"Abu Dhabi",         
-"Ahmedabad",         
-"Pune",             
+"Pune",              
+"Durban",            
 "Bengaluru",          
-"Durban",             
-"Dubai",             
-"Centurion",         
-"Dharamsala",          
-"Sharjah",             
-"Visakhapatnam",       
-"Navi Mumbai",         
-"Johannesburg",       
-"Port Elizabeth",      
-"Lucknow",            
-"Cuttack",             
-"Ranchi",             
-"Cape Town",         
-"Raipur",             
+"Visakhapatnam",      
+"Centurion",          
+"Ahmedabad",          
+"Rajkot",            
+"Mohali",             
 "Indore",              
+"Dharamsala",          
+"Johannesburg",        
+"Cuttack",             
+"Ranchi",              
+"Port Elizabeth",      
+"Cape Town",           
+"Abu Dhabi",           
+"Sharjah",            
+"Raipur",             
+"Kochi",              
+"Kanpur",              
 "Nagpur",              
-"Kimberley",          
-"East London",       
-"Bloemfontein",       
-"Guwahati"           
-    
+"Kimberley",           
+"East London",         
+"Bloemfontein"
 ]
+
+
+
 
 
 teams=[
@@ -53,8 +54,7 @@ teams=[
 "Delhi Capitals",
 "Rajasthan Royals",
 "Royal Challengers Bangalore",
- "Lucknow Super Giants",
- "Gujarat Titans"
+
     
 ]
 
