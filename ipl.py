@@ -7,7 +7,7 @@ import sklearn
 
 pipe=pickle.load(open("pipe.pkl","rb"))
 cities=[
-"Mumbai"            
+"Mumbai",           
 "Kolkata",           
 "Delhi",             
 "Bangalore",         
