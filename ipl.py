@@ -38,7 +38,7 @@ cities=[
 "Nagpur",              
 "Kimberley",          
 "East London",       
-"Bloemfontein"       
+"Bloemfontein",       
 "Guwahati"           
     
 ]
