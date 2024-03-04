@@ -88,8 +88,8 @@ with st.sidebar:
     st.caption("Made by ------")
 if submit:
 
-    crr=(target-runs_left)/((120-balls_left)+0.000000000000000000000000001/6)
-    rrr=(runs_left)/((balls_left)/6)
+    crr=(target-runs_left)/((120-balls_left)+(0.00000000001)/6)
+    rrr=(runs_left)/((balls_left)+(0.0000000000001)/6)
     data=np.array([[batting_team,bowling_team,city,runs_left,balls_left,wickets_left,target,crr,rrr]])
 
     pred=pipe.predict_proba(data)
