@@ -97,28 +97,28 @@ if submit:
 
 
     if pred[0,0]>pred[0,1]:
-        st.header(str(math.floor(((pred[0,0])*100))) + "%")
+        st.header(str(round(((pred[0,0])*100))) + "%")
         st.success("{} win probability 🥳".format(bowling_team))
 
 
-        st.header(str(math.floor(((pred[0,1])*100))) + "%")
+        st.header(str(round(((pred[0,1])*100))) + "%")
         st.warning("{} win probability 😭".format(batting_team))
 
 
 
     elif pred[0,0]<pred[0,1]:
-        st.header(str(math.floor(((pred[0,0])*100))) + "%")
+        st.header(str(round(((pred[0,0])*100))) + "%")
         st.warning("{} win probability 😭".format(bowling_team))
 
 
-        st.header(str(math.floor(((pred[0,1])*100))) + "%")
+        st.header(str(round(((pred[0,1])*100))) + "%")
         st.success("{} win probability 🥳".format(batting_team))
 
 
     else:
-        st.header(str(math.floor(((pred[0,0])*100))) + "%")
+        st.header(str(round(((pred[0,0])*100))) + "%")
         st.success("{} win probability".format(bowling_team))
 
 
-        st.header(str(math.floor(((pred[0,1])*100))) + "%")
+        st.header(str(round(((pred[0,1])*100))) + "%")
         st.success("{} win probability".format(batting_team))
