@@ -83,7 +83,7 @@ target=st.number_input("Target score",value=1)
 submit=st.button("predict")
 with st.sidebar:
     st.header("Welcome 🤗")
-    st.write("Welcome to our cutting-edge IPL prediction platform, where data meets excitement! Our website is your go-to destination for unraveling the mysteries of IPL match outcomes. By harnessing the power of machine learning, we dissect current match statistics to provide you with a predictive edge like never before. Whether you're a seasoned cricket aficionado or a casual fan, our platform offers a unique blend of real-time data and analytical prowess. Dive into the heart of the game, explore team dynamics, player performance, and strategic insights, all meticulously analyzed by our advanced ML model. Empower your cricket predictions with the precision of data, and elevate your IPL experience with our unparalleled predictive prowess. It's not just about the game; it's about making informed choices and riding the thrill of anticipation. Join us in transforming the way you engage with IPL matches.")
+    st.write("Welcome tere data meets excio destination for unraveling the mysteries of IPL match outcomes.")
     st.divider()
     st.caption("Made by ------")
 if submit:
