@@ -83,8 +83,7 @@ target=st.number_input("Target score",value=1)
 submit=st.button("predict")
 with st.sidebar:
     st.header("Welcome 🤗")
-    st.write(""" 
-IPL Win Predictor
+    st.write("""IPL Win Predictor
 Welcome to the IPL Win Predictor, a machine learning-powered tool designed to predict the probability of a team winning an ongoing IPL match.
 
 How It Works:
