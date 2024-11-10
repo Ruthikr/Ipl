@@ -83,9 +83,31 @@ target=st.number_input("Target score",value=1)
 submit=st.button("predict")
 with st.sidebar:
     st.header("Welcome 🤗")
-    st.write("Welcome tere data meets excio destination for unraveling the mysteries of IPL match outcomes.")
+    st.write(""" 
+IPL Win Predictor
+Welcome to the IPL Win Predictor, a machine learning-powered tool designed to predict the probability of a team winning an ongoing IPL match.
+
+How It Works:
+
+Input Match Details: Enter key match details such as teams playing, toss winner, and match venue.
+
+Prediction: Based on historical IPL match data from the first season to the present, the model uses Logistic Regression to calculate the likelihood of each team winning, providing you with a balanced probability.
+
+Interactive Dashboard: View real-time predictions and adjust input data to see how different match conditions influence the outcome.
+
+
+Key Features:
+
+Data-driven predictions based on years of IPL data.
+
+Simple and intuitive interface for easy match input.
+
+Real-time team win probability calculation using Logistic Regression.
+
+
+Explore the data-driven insights and make your next IPL match predictions! """)
     st.divider()
-    st.caption("Made by ------")
+    st.caption("Made by- Ruthik")
 if submit:
 
     crr=(target-runs_left)/((120-balls_left)+(0.0000000000000000001)/6)
