@@ -1,41 +1,28 @@
 import streamlit as st
 import pickle
 import numpy as np
-import math
 import matplotlib.pyplot as plt
 import os
 
-# Streamlit Config
 st.set_page_config(page_title="IPL Win Predictor", page_icon="🏏", layout="wide")
 
-# Load model (with cache)
+# Load ML model
 @st.cache_resource
 def load_model():
     return pickle.load(open("pipe.pkl", "rb"))
 
 pipe = load_model()
 
-# Teams, Abbreviations, Colors
+# Team info
 teams = {
-    "Mumbai Indians": "MI",
-    "Sunrisers Hyderabad": "SRH",
-    "Chennai Super Kings": "CSK",
-    "Punjab Kings": "PBKS",
-    "Kolkata Knight Riders": "KKR",
-    "Delhi Capitals": "DC",
-    "Rajasthan Royals": "RR",
-    "Royal Challengers Bangalore": "RCB"
-}
-
-team_colors = {
-    "Mumbai Indians": "#045093",
-    "Sunrisers Hyderabad": "#f26522",
-    "Chennai Super Kings": "#f8cd0a",
-    "Punjab Kings": "#d11a2a",
-    "Kolkata Knight Riders": "#3b215d",
-    "Delhi Capitals": "#17449b",
-    "Rajasthan Royals": "#ea1a8c",
-    "Royal Challengers Bangalore": "#da1818"
+    "Mumbai Indians": ("MI", "#045093"),
+    "Sunrisers Hyderabad": ("SRH", "#f26522"),
+    "Chennai Super Kings": ("CSK", "#f8cd0a"),
+    "Punjab Kings": ("PBKS", "#d11a2a"),
+    "Kolkata Knight Riders": ("KKR", "#3b215d"),
+    "Delhi Capitals": ("DC", "#17449b"),
+    "Rajasthan Royals": ("RR", "#ea1a8c"),
+    "Royal Challengers Bangalore": ("RCB", "#da1818")
 }
 
 cities = [
@@ -45,66 +32,85 @@ cities = [
     "Raipur", "Kimberley", "East London", "Bloemfontein"
 ]
 
-# Helper: Logo Renderer
-def show_team_badge(team, width=100):
-    abbr = teams[team]
-    logo_path = f"team_logos/{abbr}.png"
-    if os.path.exists(logo_path):
-        st.image(logo_path, width=width)
-    else:
-        st.markdown(f"🛑 Logo missing for {team}")
+# Custom CSS for mobile layout and cards
+st.markdown("""
+    <style>
+    .logo-box {
+        display: flex; justify-content: center; align-items: center;
+        padding: 10px;
+        border-radius: 12px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .card {
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        background-color: #f5f5f5;
+        margin-bottom: 10px;
+    }
+    .team-name {
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Pie Chart
+# Functions
+def show_logo(team, width=120):
+    abbr = teams[team][0]
+    path = f"team_logos/{abbr}.png"
+    if os.path.exists(path):
+        st.image(path, width=width)
+    else:
+        st.write(f"Logo not found for {abbr}")
+
 def plot_pie_chart(pred, labels):
-    colors = [team_colors.get(team, "#cccccc") for team in labels]
+    colors = [teams[l][1] for l in labels]
     fig, ax = plt.subplots()
     ax.pie(pred, labels=labels, autopct='%1.1f%%', startangle=140, colors=colors)
-    ax.axis("equal")
+    ax.axis('equal')
     st.pyplot(fig)
 
-# Match Summary Text
 def generate_match_story(batting_team, bowling_team, runs_left, balls_left, wickets_left, crr, rrr):
-    tone = "tense" if rrr > crr else "comfortable"
-    if tone == "tense":
-        return f"{batting_team} are under pressure! With {runs_left} runs needed off {balls_left} balls and only {wickets_left} wickets in hand, they need {rrr} RPO against a strong {bowling_team} attack."
+    if rrr > crr:
+        return f"{batting_team} need {runs_left} runs from {balls_left} balls with {wickets_left} wickets left. The required rate is {rrr}, higher than the current rate of {crr} – pressure is on!"
     else:
-        return f"{batting_team} seem in control! They need {runs_left} runs off {balls_left} balls with {wickets_left} wickets remaining. Current run rate is {crr}, and required is {rrr}."
+        return f"{batting_team} need {runs_left} runs from {balls_left} balls with {wickets_left} wickets left. They are cruising with a current run rate of {crr} and only {rrr} required!"
 
-# CRR & RRR Calculator
 def calculate_crr_rrr(runs_left, balls_left, target):
     overs_bowled = (120 - balls_left) / 6
     crr = (target - runs_left) / overs_bowled if overs_bowled > 0 else 0
     rrr = runs_left / (balls_left / 6) if balls_left > 0 else float("inf")
     return round(crr, 2), round(rrr, 2)
 
-# UI
-st.title("🏏 IPL Win Predictor")
-st.markdown("Get real-time win probabilities using a machine learning model trained on IPL match data.")
+# Header
+st.markdown("<h1 style='text-align:center;'>🏏 IPL Win Predictor</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;'>Get real-time win probabilities using a machine learning model trained on IPL match data.</p>", unsafe_allow_html=True)
 st.divider()
 
-with st.sidebar:
-    st.header("Welcome 🤗")
-    st.write("Use the inputs below to simulate an ongoing match scenario and predict the winning probability.")
-    st.caption("Made by: Ruthik")
-
-# Match Inputs
-st.header("Second Innings Predictor")
+# Inputs
 col1, col2 = st.columns(2)
 
 with col1:
-    batting_team = st.selectbox("Select Batting Team", list(teams.keys()))
-    city = st.selectbox("Select City of Playing", cities)
-    runs_left = st.number_input("Runs Left to Win", min_value=1)
+    batting_team = st.selectbox("Batting Team", list(teams.keys()))
+    city = st.selectbox("City", cities)
+    runs_left = st.number_input("Runs Left", min_value=1)
     wickets_left = st.selectbox("Wickets Remaining", list(range(1, 11)))
 
 with col2:
-    bowling_team = st.selectbox("Select Bowling Team", list(teams.keys())[::-1])
+    bowling_team = st.selectbox("Bowling Team", list(teams.keys())[::-1])
     balls_left = st.number_input("Balls Left", min_value=1, max_value=120)
     target = st.number_input("Target Score", min_value=1)
 
-submit = st.button("🎯 Predict")
+submit = st.button("Predict")
 
-# Prediction
 if submit:
     if runs_left >= target:
         st.error("Runs left must be less than the target.")
@@ -113,67 +119,53 @@ if submit:
     else:
         crr, rrr = calculate_crr_rrr(runs_left, balls_left, target)
         input_data = np.array([[batting_team, bowling_team, city, runs_left, balls_left, wickets_left, target, crr, rrr]])
-
         try:
             prediction = pipe.predict_proba(input_data)
             win_prob_bowling = prediction[0][0]
             win_prob_batting = prediction[0][1]
 
-            # Section 1: Logos & Badges
-            st.subheader("🏁 Teams")
-            t1, t2 = st.columns(2)
-            with t1:
-                show_team_badge(batting_team)
-                st.markdown(f"<div style='text-align:center;font-size:20px;color:{team_colors[batting_team]}'><b>{batting_team}</b></div>", unsafe_allow_html=True)
-            with t2:
-                show_team_badge(bowling_team)
-                st.markdown(f"<div style='text-align:center;font-size:20px;color:{team_colors[bowling_team]}'><b>{bowling_team}</b></div>", unsafe_allow_html=True)
+            # Team Logos
+            team_cols = st.columns(2)
+            with team_cols[0]:
+                show_logo(batting_team)
+                st.markdown(f"<div class='team-name' style='color:{teams[batting_team][1]}'>{batting_team}</div>", unsafe_allow_html=True)
+            with team_cols[1]:
+                show_logo(bowling_team)
+                st.markdown(f"<div class='team-name' style='color:{teams[bowling_team][1]}'>{bowling_team}</div>", unsafe_allow_html=True)
 
-            # Section 2: Win Pie Chart
-            st.subheader("🔮 Win Probability")
+            # Pie Chart
+            st.subheader("Win Probability")
             plot_pie_chart([win_prob_bowling, win_prob_batting], [bowling_team, batting_team])
-            st.progress(int(win_prob_batting * 100))
 
-            if win_prob_batting > win_prob_bowling:
-                st.success(f"{batting_team} are more likely to win! 🥳 ({round(win_prob_batting*100)}%)")
-                st.warning(f"{bowling_team} chance: {round(win_prob_bowling*100)}%")
-            else:
-                st.success(f"{bowling_team} are more likely to win! 🥳 ({round(win_prob_bowling*100)}%)")
-                st.warning(f"{batting_team} chance: {round(win_prob_batting*100)}%)")
+            # Probability Cards
+            prob_cols = st.columns(2)
+            with prob_cols[0]:
+                st.markdown(f"""
+                    <div class='card' style='background-color:{teams[batting_team][1]}; color:white;'>
+                        {batting_team}<br><span style='font-size:28px'>{round(win_prob_batting*100, 1)}%</span><br>Win Probability
+                    </div>
+                """, unsafe_allow_html=True)
+            with prob_cols[1]:
+                st.markdown(f"""
+                    <div class='card' style='background-color:{teams[bowling_team][1]}; color:white;'>
+                        {bowling_team}<br><span style='font-size:28px'>{round(win_prob_bowling*100, 1)}%</span><br>Win Probability
+                    </div>
+                """, unsafe_allow_html=True)
 
-            # Section 3: Insight Text
-            st.markdown("### Verdict Insight")
-            diff = abs(win_prob_batting - 0.5)
-            if win_prob_batting > 0.8:
-                st.success("🎯 Almost there! Batting team in full control.")
-            elif win_prob_batting < 0.2:
-                st.error("🛑 Very tough! Bowling team has the upper hand.")
-            elif diff < 0.1:
-                st.info("⚖️ It's a nail-biter! Could go either way.")
-            else:
-                st.info("Match evenly poised. Keep watching!")
+            # Match Stats
+            st.subheader("Match Situation")
+            match_stats = st.columns(4)
+            match_stats[0].metric("Target", target)
+            match_stats[1].metric("Runs Left", runs_left)
+            match_stats[2].metric("Balls Left", balls_left)
+            match_stats[3].metric("Wickets Left", wickets_left)
+            st.metric("CRR", crr)
+            st.metric("RRR", rrr)
 
-            st.divider()
-
-            # Section 4: Match Stats
-            st.subheader("📊 Match Situation")
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("Target", target)
-            c2.metric("Runs Left", runs_left)
-            c3.metric("Balls Left", balls_left)
-            c4.metric("Wickets Left", wickets_left)
-            st.metric("Current Run Rate (CRR)", crr)
-            st.metric("Required Run Rate (RRR)", rrr)
-
-            # Section 5: Match Progress
-            st.subheader("📈 Match Progress")
-            progress_pct = int(((target - runs_left) / target) * 100)
-            st.progress(progress_pct)
-
-            # Section 6: Summary
-            st.subheader("📖 Match Summary")
-            story = generate_match_story(batting_team, bowling_team, runs_left, balls_left, wickets_left, crr, rrr)
-            st.info(story)
+            # Summary
+            st.subheader("Summary")
+            summary = generate_match_story(batting_team, bowling_team, runs_left, balls_left, wickets_left, crr, rrr)
+            st.info(summary)
 
         except Exception as e:
             st.error(f"Prediction failed: {e}")
