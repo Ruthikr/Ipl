@@ -1,6 +1,6 @@
 [theme]
-primaryColor = "#FF9800"               # Orange - sporty, energetic
-backgroundColor = "#121212"            # Deep dark background
-secondaryBackgroundColor = "#1E1E2F"   # Slightly lighter dark for contrast
-textColor = "#EAEAEA"                  # Soft white, easy on eyes
-font = "sans serif"
+primaryColor="#FF4B4B"
+backgroundColor="#282C35"
+secondaryBackgroundColor="#800000"
+textColor="#FFFFFF"
+font="sans serif"
