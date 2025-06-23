@@ -47,12 +47,18 @@ with st.sidebar:
 def team_badge(team_name):
     logo_path = teams[team_name]["logo"]
     color = teams[team_name]["color"]
-    st.markdown(f"""
-        <div style="display: flex; align-items: center; gap: 10px; background: {color}; padding: 8px; border-radius: 10px;">
-            <img src="data:image/png;base64,{get_image_base64(logo_path)}" width="30"/>
-            <span style="color: white; font-weight: bold;">{team_name}</span>
-        </div>
-    """, unsafe_allow_html=True)
+
+    try:
+        with open(logo_path, "rb") as f:
+            encoded_image = base64.b64encode(f.read()).decode()
+        st.markdown(f"""
+            <div style="display: flex; align-items: center; gap: 10px; background: {color}; padding: 8px; border-radius: 10px; margin-bottom:10px;">
+                <img src="data:image/png;base64,{encoded_image}" width="32" height="32"/>
+                <span style="color: white; font-weight: bold;">{team_name}</span>
+            </div>
+        """, unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.warning(f"Logo not found for {team_name}")
 
 # Encode logo to base64 for inline image
 import base64
