@@ -4,14 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-# Load model
+# ----- Config -----
+st.set_page_config(page_title="IPL Win Predictor", page_icon="🏏", layout="wide")
+
 @st.cache_resource
 def load_model():
     return pickle.load(open("pipe.pkl", "rb"))
 
 pipe = load_model()
 
-# Team data
+# ----- Teams, Colors, Logos -----
 teams = {
     "Mumbai Indians": ("MI", "#045093"),
     "Sunrisers Hyderabad": ("SRH", "#f26522"),
@@ -30,116 +32,126 @@ cities = [
     "Raipur", "Kimberley", "East London", "Bloemfontein"
 ]
 
-# Style
-st.set_page_config(page_title="IPL Win Predictor", page_icon="🏏", layout="wide")
+# ----- Custom CSS -----
 st.markdown("""
     <style>
-        body { background-color: #0d1117; color: white; }
-        .team-card {
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
-            color: white;
-        }
-        .win-box {
-            border-radius: 12px;
-            padding: 20px;
-            font-size: 22px;
-            text-align: center;
-            font-weight: bold;
-            color: white;
-        }
+    body { background-color: #121212; }
+    .block-container { padding-top: 2rem; }
+    .team-card {
+        padding: 1.5rem; border-radius: 15px; color: white; font-weight: bold;
+        text-align: center; margin-bottom: 1rem;
+    }
+    .stat-box {
+        background: #1e1e1e; border-radius: 10px; padding: 10px; text-align: center;
+        color: white; font-size: 16px; font-weight: bold;
+    }
+    footer { text-align: center; color: gray; padding-top: 2rem; font-size: 0.9rem; }
     </style>
 """, unsafe_allow_html=True)
 
-# Functions
-def show_logo(team):
+# ----- Utility Functions -----
+def show_logo(team, width=100):
     abbr = teams[team][0]
-    logo_path = f"team_logos/{abbr}.png"
-    if os.path.exists(logo_path):
-        st.image(logo_path, width=100)
+    path = f"team_logos/{abbr}.png"
+    if os.path.exists(path):
+        st.image(path, width=width)
     else:
-        st.write(f"{team} logo missing")
+        st.write("Logo not found")
 
-def plot_pie_chart(pred, labels):
+def plot_pie(pred, labels):
     colors = [teams[l][1] for l in labels]
     fig, ax = plt.subplots()
     ax.pie(pred, labels=labels, autopct='%1.1f%%', startangle=140, colors=colors)
-    ax.axis('equal')
+    ax.axis("equal")
     st.pyplot(fig)
 
-def calculate_crr_rrr(runs_left, balls_left, target):
-    overs_bowled = (120 - balls_left) / 6
-    crr = (target - runs_left) / overs_bowled if overs_bowled > 0 else 0
-    rrr = runs_left / (balls_left / 6) if balls_left > 0 else float('inf')
+def generate_story(bat, bowl, runs, balls, wickets, crr, rrr):
+    if rrr > crr:
+        return f"{bat} need {runs} runs in {balls} balls with {wickets} wickets. RRR {rrr} > CRR {crr}. Pressure on!"
+    else:
+        return f"{bat} need {runs} runs in {balls} balls with {wickets} wickets. RRR {rrr} < CRR {crr}. Looking good!"
+
+def calc_crr_rrr(runs, balls, target):
+    overs = (120 - balls) / 6
+    crr = (target - runs) / overs if overs > 0 else 0
+    rrr = runs / (balls / 6) if balls > 0 else float("inf")
     return round(crr, 2), round(rrr, 2)
 
-def generate_match_story(batting_team, bowling_team, runs_left, balls_left, wickets_left, crr, rrr):
-    if rrr > crr:
-        return f"{batting_team} are chasing {runs_left} off {balls_left} with {wickets_left} wickets left. RRR {rrr} > CRR {crr} - tense situation!"
-    else:
-        return f"{batting_team} are chasing {runs_left} off {balls_left} with {wickets_left} wickets left. RRR {rrr} < CRR {crr} - looking strong!"
+# ----- Header -----
+st.markdown("""
+    <h1 style='text-align:center; color:white;'>🏏 IPL Win Predictor</h1>
+    <p style='text-align:center; color:gray;'>Live win probabilities based on match state</p>
+""", unsafe_allow_html=True)
+st.divider()
 
-# Header
-st.markdown("<h1 style='text-align:center;color:white;'>🏏 IPL Win Predictor</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center;'>Made with ❤️ by <b>Ruthik</b></p>", unsafe_allow_html=True)
-
-# Inputs
+# ----- Inputs -----
 col1, col2 = st.columns(2)
-
 with col1:
-    batting_team = st.selectbox("Batting Team", list(teams.keys()))
+    bat_team = st.selectbox("Batting Team", list(teams.keys()))
     city = st.selectbox("City", cities)
-    runs_left = st.number_input("Runs Left", min_value=1)
+    runs_left = st.number_input("Runs Left", 1)
     wickets_left = st.selectbox("Wickets Left", list(range(1, 11)))
 
 with col2:
-    bowling_team = st.selectbox("Bowling Team", list(teams.keys())[::-1])
-    balls_left = st.number_input("Balls Left", min_value=1, max_value=120)
-    target = st.number_input("Target Score", min_value=1)
+    bowl_team = st.selectbox("Bowling Team", list(teams.keys())[::-1])
+    balls_left = st.number_input("Balls Left", 1, 120)
+    target = st.number_input("Target", 1)
 
-submit = st.button("Predict")
+if st.button("Predict 🔮"):
+    if runs_left >= target:
+        st.error("Runs left must be less than the target")
+    else:
+        crr, rrr = calc_crr_rrr(runs_left, balls_left, target)
+        inp = np.array([[bat_team, bowl_team, city, runs_left, balls_left, wickets_left, target, crr, rrr]])
 
-if submit:
-    crr, rrr = calculate_crr_rrr(runs_left, balls_left, target)
-    input_data = np.array([[batting_team, bowling_team, city, runs_left, balls_left, wickets_left, target, crr, rrr]])
-    try:
-        pred = pipe.predict_proba(input_data)
-        win_bowling = pred[0][0]
-        win_batting = pred[0][1]
+        try:
+            prob = pipe.predict_proba(inp)[0]
+            win_bowl, win_bat = prob[0], prob[1]
 
-        t1, t2 = st.columns(2)
-        with t1:
-            st.markdown(f"<div class='team-card' style='background-color:{teams[batting_team][1]};'>", unsafe_allow_html=True)
-            show_logo(batting_team)
-            st.markdown(f"{batting_team}</div>", unsafe_allow_html=True)
-        with t2:
-            st.markdown(f"<div class='team-card' style='background-color:{teams[bowling_team][1]};'>", unsafe_allow_html=True)
-            show_logo(bowling_team)
-            st.markdown(f"{bowling_team}</div>", unsafe_allow_html=True)
+            team1, team2 = st.columns(2)
+            with team1:
+                st.markdown(f"""
+                    <div class='team-card' style='background:{teams[bat_team][1]}'>
+                        {bat_team}<br>
+                        <img src='team_logos/{teams[bat_team][0]}.png' width='100'><br>
+                        <span style='font-size:24px'>{round(win_bat*100)}%</span> win chance
+                    </div>
+                """, unsafe_allow_html=True)
 
-        st.markdown("<h3 style='text-align:center'>Win Probability</h3>", unsafe_allow_html=True)
-        plot_pie_chart([win_bowling, win_batting], [bowling_team, batting_team])
+            with team2:
+                st.markdown(f"""
+                    <div class='team-card' style='background:{teams[bowl_team][1]}'>
+                        {bowl_team}<br>
+                        <img src='team_logos/{teams[bowl_team][0]}.png' width='100'><br>
+                        <span style='font-size:24px'>{round(win_bowl*100)}%</span> win chance
+                    </div>
+                """, unsafe_allow_html=True)
 
-        w1, w2 = st.columns(2)
-        with w1:
-            st.markdown(f"<div class='win-box' style='background-color:{teams[batting_team][1]};'>{batting_team}<br>{round(win_batting*100,1)}%</div>", unsafe_allow_html=True)
-        with w2:
-            st.markdown(f"<div class='win-box' style='background-color:{teams[bowling_team][1]};'>{bowling_team}<br>{round(win_bowling*100,1)}%</div>", unsafe_allow_html=True)
+            # Chart
+            st.markdown("<h3 style='text-align:center; color:white;'>Win Distribution</h3>", unsafe_allow_html=True)
+            plot_pie([win_bowl, win_bat], [bowl_team, bat_team])
 
-        st.subheader("Match Situation")
-        s1, s2, s3, s4 = st.columns(4)
-        s1.metric("Target", target)
-        s2.metric("Runs Left", runs_left)
-        s3.metric("Balls Left", balls_left)
-        s4.metric("Wickets", wickets_left)
-        st.metric("CRR", crr)
-        st.metric("RRR", rrr)
+            # Stats Row
+            st.markdown("<h3 style='color:white;'>Match Stats</h3>", unsafe_allow_html=True)
+            c1, c2, c3, c4 = st.columns(4)
+            c1.markdown(f"<div class='stat-box'>Target<br>{target}</div>", unsafe_allow_html=True)
+            c2.markdown(f"<div class='stat-box'>Runs Left<br>{runs_left}</div>", unsafe_allow_html=True)
+            c3.markdown(f"<div class='stat-box'>Balls Left<br>{balls_left}</div>", unsafe_allow_html=True)
+            c4.markdown(f"<div class='stat-box'>Wickets Left<br>{wickets_left}</div>", unsafe_allow_html=True)
 
-        st.subheader("Summary")
-        st.info(generate_match_story(batting_team, bowling_team, runs_left, balls_left, wickets_left, crr, rrr))
+            # RRR & CRR
+            st.markdown(f"<div class='stat-box'>CRR: {crr} | RRR: {rrr}</div>", unsafe_allow_html=True)
 
-    except Exception as e:
-        st.error(f"Prediction failed: {e}")
+            # Summary
+            st.markdown("<h3 style='color:white;'>Match Story</h3>", unsafe_allow_html=True)
+            st.info(generate_story(bat_team, bowl_team, runs_left, balls_left, wickets_left, crr, rrr))
+
+        except Exception as e:
+            st.error(f"Prediction failed: {e}")
+
+# ----- Footer -----
+st.markdown("""
+    <footer>
+        🛠️ Made by: <b>Ruthik</b> | Built with Streamlit ❤️
+    </footer>
+""", unsafe_allow_html=True)
