@@ -58,7 +58,7 @@ def generate_match_story(batting_team, bowling_team, runs_left, balls_left, wick
     overs_left = balls_left // 6  
     balls_remaining = balls_left % 6  
     time_phrase = f"{overs_left} overs" + (f" and {balls_remaining} balls" if balls_remaining > 0 else "")  
-
+  
     if rrr > crr:  
         return (  
             f"{batting_team} need {runs_left} runs from {time_phrase} with {wickets_left} wickets in hand. "  
@@ -93,7 +93,8 @@ with col1:
     wickets_left = st.selectbox("Wickets Remaining", list(range(1, 11)))  
   
 with col2:  
-    bowling_team = st.selectbox("Bowling Team", list(teams.keys())[::-1])  
+    available_bowling_teams = [team for team in teams.keys() if team != batting_team]  
+    bowling_team = st.selectbox("Bowling Team", available_bowling_teams)  
     balls_left = st.number_input("Balls Left", min_value=1, max_value=120)  
     target = st.number_input("Target Score", min_value=1)  
   
